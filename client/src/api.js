@@ -60,3 +60,11 @@ export const fetchSocialLinks = () =>
  */
 export const fetchProjects = () => request('/projects').then((r) => r.projects);
 
+export const fetchServices = () => request('/services').then((r) => r.services);
+
+export const submitContact = (payload) =>
+  request('/contact', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((r) => r.message);
+
