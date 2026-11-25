@@ -1,0 +1,25 @@
+info:
+  name: Get Profile
+  type: http
+  seq: 5
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/profile
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("profile returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("profile has name and title", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("profile");
+          const p = body.profile;
+          expect(p).to.have.property("name");
+          expect(p).to.have.property("title");
+        });

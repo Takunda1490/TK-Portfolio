@@ -1,0 +1,3 @@
+### List Social Links (public)
+GET {{baseUrl}}/api/social-links
+Accept: application/json

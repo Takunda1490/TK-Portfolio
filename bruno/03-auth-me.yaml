@@ -1,0 +1,27 @@
+info:
+  name: Get Current User
+  type: http
+  seq: 3
+  tags:
+    - auth
+http:
+  method: GET
+  url: http://localhost:5000/api/auth/me
+  headers:
+    - name: Authorization
+      value: Bearer {{auth_token}}
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("me returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body contains authenticated user", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("user");
+          expect(body.user).to.have.property("email");
+          expect(body.user).to.have.property("role", "admin");
+        });

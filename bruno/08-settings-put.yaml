@@ -1,0 +1,32 @@
+info:
+  name: Update Site Settings
+  type: http
+  seq: 8
+  tags:
+    - auth
+http:
+  method: PUT
+  url: http://localhost:5000/api/settings
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{auth_token}}
+  body:
+    type: json
+    data: |-
+      { "seo_title": "TK Portfolio - Developer", "site_tagline": "Full-stack portfolio" }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("update settings returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("settings updated", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("settings");
+          expect(body.settings.seo_title).to.equal("TK Portfolio - Developer");
+        });

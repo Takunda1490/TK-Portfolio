@@ -1,0 +1,32 @@
+info:
+  name: Update Project
+  type: http
+  seq: 12
+  tags:
+    - auth
+http:
+  method: PUT
+  url: http://localhost:5000/api/projects/{{project_id}}
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{auth_token}}
+  body:
+    type: json
+    data: |-
+      { "title": "Bruno Test Project (updated)", "description": "Updated by Bruno API test.", "published": true }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("update project returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("project updated", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("project");
+          expect(body.project.title).to.equal("Bruno Test Project (updated)");
+        });

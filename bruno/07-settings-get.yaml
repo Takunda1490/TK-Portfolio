@@ -1,0 +1,23 @@
+info:
+  name: Get Site Settings
+  type: http
+  seq: 7
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/settings
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("settings returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body has settings object", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("settings");
+          expect(body.settings).to.be.an("object");
+        });

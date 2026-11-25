@@ -1,0 +1,38 @@
+### List Projects (public)
+GET {{baseUrl}}/api/projects
+Accept: application/json
+
+### Get Project by Slug (public)
+GET {{baseUrl}}/api/projects/sample-project
+Accept: application/json
+
+### Create Project (auth) — stores id for reuse
+@name create-project
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "REST Client Test Project",
+  "description": "Created via VS Code REST Client.",
+  "tech_stack": ["React", "Node.js"],
+  "live_url": "https://example.com",
+  "repo_url": "https://github.com/example/repo",
+  "published": true,
+  "order": 10
+}
+
+### Update Project (auth)
+PUT {{baseUrl}}/api/projects/{{create-project.response.body.project.id}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "REST Client Test Project (updated)",
+  "description": "Updated via VS Code REST Client.",
+  "published": true
+}
+
+### Delete Project (auth)
+DELETE {{baseUrl}}/api/projects/{{create-project.response.body.project.id}}
+Authorization: Bearer {{authToken}}

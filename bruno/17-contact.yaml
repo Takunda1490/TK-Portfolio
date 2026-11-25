@@ -1,0 +1,32 @@
+info:
+  name: Submit Contact Form
+  type: http
+  seq: 17
+  tags:
+    - public
+http:
+  method: POST
+  url: http://localhost:5000/api/contact
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      { "name": "Bruno Tester", "email": "bruno@example.com", "subject": "API test", "body": "This is a contact form test from Bruno." }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("contact returns 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("message saved with id", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("message");
+          expect(body.message).to.have.property("id");
+          expect(body.message.name).to.equal("Bruno Tester");
+          bru.setVar("contact_id", body.message.id);
+        });

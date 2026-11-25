@@ -1,0 +1,12 @@
+{
+  "name": "tk-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TK Portfolio - Full-stack portfolio with an admin dashboard",
+  "scripts": {
+    "dev": "pnpm --filter tk-portfolio-server run dev & pnpm --filter tk-portfolio-client run dev",
+    "install:all": "pnpm install",
+    "migrate": "pnpm --filter tk-portfolio-server run migrate",
+    "seed": "pnpm --filter tk-portfolio-server run seed"
+  }
+}

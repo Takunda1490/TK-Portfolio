@@ -1,0 +1,26 @@
+info:
+  name: Health Check
+  type: http
+  seq: 1
+  tags:
+    - smoke
+http:
+  method: GET
+  url: http://localhost:5000/api/health
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("status is 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body returns status ok", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("status", "ok");
+          expect(body).to.have.property("uptime");
+        });

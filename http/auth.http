@@ -1,0 +1,17 @@
+### Admin Login
+@name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Get Current User (Bearer auth)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{authToken}}
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{authToken}}

@@ -1,0 +1,4 @@
+### List Messages (auth, paginated)
+GET {{baseUrl}}/api/messages?page=1&limit=10
+Authorization: Bearer {{authToken}}
+Accept: application/json

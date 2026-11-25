@@ -1,0 +1,11 @@
+### Submit Contact Form (public)
+@name contact
+POST {{baseUrl}}/api/contact
+Content-Type: application/json
+
+{
+  "name": "REST Client Tester",
+  "email": "restclient@example.com",
+  "subject": "API test",
+  "body": "This is a contact form test from VS Code REST Client."
+}

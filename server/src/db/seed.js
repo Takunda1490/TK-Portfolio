@@ -25,6 +25,25 @@ const seed = async () => {
        ON DUPLICATE KEY UPDATE name=VALUES(name)`
     );
 
+    await conn.query('DELETE FROM services');
+    await conn.query(
+      `INSERT INTO services (title, description, icon, \`order\`) VALUES
+       ('Web Development','Custom websites and web applications','code',1),
+       ('UI/UX Design','User-centered interface and experience design','pencil',2),
+       ('API Integration','Third-party API and service integration','cpu',3)`
+    );
+
+    await conn.query('DELETE FROM skills');
+    await conn.query(
+      `INSERT INTO skills (name, level, category, \`order\`) VALUES
+       ('JavaScript', 90, 'Frontend', 1),
+       ('React', 85, 'Frontend', 2),
+       ('Node.js', 80, 'Backend', 1),
+       ('MySQL', 75, 'Database', 1),
+       ('CSS', 85, 'Frontend', 3)`
+
+    );
+
     await conn.query('DELETE FROM social_links');
     await conn.query(
       `INSERT INTO social_links (platform, url, icon, \`order\`) VALUES

@@ -1,0 +1,13 @@
+### Get Site Settings (public)
+GET {{baseUrl}}/api/settings
+Accept: application/json
+
+### Update Site Settings (auth)
+PUT {{baseUrl}}/api/settings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "seo_title": "TK Portfolio - Developer",
+  "site_tagline": "Full-stack portfolio"
+}

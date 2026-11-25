@@ -1,0 +1,23 @@
+info:
+  name: List Social Links
+  type: http
+  seq: 16
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/social-links
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("social-links returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body has social_links array", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("social_links");
+          expect(body.social_links).to.be.an("array");
+        });

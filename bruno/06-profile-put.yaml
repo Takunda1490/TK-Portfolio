@@ -1,0 +1,33 @@
+info:
+  name: Update Profile
+  type: http
+  seq: 6
+  tags:
+    - auth
+http:
+  method: PUT
+  url: http://localhost:5000/api/profile
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{auth_token}}
+  body:
+    type: json
+    data: |-
+      { "name": "TK", "title": "Web Developer", "bio": "Hi, I am TK, a web developer." }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("update profile returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("profile updated", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("profile");
+          expect(body.profile.name).to.equal("TK");
+          expect(body.profile.title).to.equal("Web Developer");
+        });

@@ -1,0 +1,23 @@
+info:
+  name: List Projects
+  type: http
+  seq: 9
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/projects
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("projects returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body has projects array", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("projects");
+          expect(body.projects).to.be.an("array");
+        });

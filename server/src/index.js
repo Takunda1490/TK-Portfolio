@@ -8,6 +8,10 @@ import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
 import settingsRoutes from './routes/settings.js';
 import projectsRoutes from './routes/projects.js';
+import servicesRoutes from './routes/services.js';
+import skillsRoutes from './routes/skills.js';
+import socialLinksRoutes from './routes/social_links.js';
+import messagesRoutes from './routes/messages.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +32,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/services', servicesRoutes);
+app.use('/api/skills', skillsRoutes);
+app.use('/api/social-links', socialLinksRoutes);
+app.use('/api', messagesRoutes);
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 

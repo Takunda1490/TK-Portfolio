@@ -1,0 +1,3 @@
+### List Skills (public)
+GET {{baseUrl}}/api/skills
+Accept: application/json

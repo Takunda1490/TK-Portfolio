@@ -1,0 +1,29 @@
+info:
+  name: List Messages
+  type: http
+  seq: 18
+  tags:
+    - auth
+http:
+  method: GET
+  url: http://localhost:5000/api/messages?page=1&limit=10
+  headers:
+    - name: Authorization
+      value: Bearer {{auth_token}}
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("messages returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("response is paginated", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("messages");
+          expect(body.messages).to.be.an("array");
+          expect(body).to.have.property("total");
+          expect(body).to.have.property("page", 1);
+          expect(body).to.have.property("limit", 10);
+        });

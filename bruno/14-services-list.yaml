@@ -1,0 +1,24 @@
+info:
+  name: List Services
+  type: http
+  seq: 14
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/services
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("services returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body has non-empty services array", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("services");
+          expect(body.services).to.be.an("array");
+          expect(body.services.length).to.be.greaterThan(0);
+        });

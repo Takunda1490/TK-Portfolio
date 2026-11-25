@@ -1,0 +1,3 @@
+### List Services (public)
+GET {{baseUrl}}/api/services
+Accept: application/json

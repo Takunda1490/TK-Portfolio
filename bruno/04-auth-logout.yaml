@@ -1,0 +1,24 @@
+info:
+  name: Logout
+  type: http
+  seq: 4
+  tags:
+    - auth
+http:
+  method: POST
+  url: http://localhost:5000/api/auth/logout
+  headers:
+    - name: Authorization
+      value: Bearer {{auth_token}}
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("logout returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body ok is true", () => {
+          expect(res.getBody().ok).to.equal(true);
+        });

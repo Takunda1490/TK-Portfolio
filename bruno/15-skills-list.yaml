@@ -1,0 +1,23 @@
+info:
+  name: List Skills
+  type: http
+  seq: 15
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/skills
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("skills returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body has skills grouped by category", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("skills");
+          expect(body.skills).to.be.an("object");
+        });

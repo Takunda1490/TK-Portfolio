@@ -1,0 +1,14 @@
+### Get Profile (public)
+GET {{baseUrl}}/api/profile
+Accept: application/json
+
+### Update Profile (auth)
+PUT {{baseUrl}}/api/profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "TK",
+  "title": "Web Developer",
+  "bio": "Hi, I am TK, a web developer."
+}

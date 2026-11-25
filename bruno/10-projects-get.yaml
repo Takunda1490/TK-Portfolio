@@ -1,0 +1,25 @@
+info:
+  name: Get Project by Slug
+  type: http
+  seq: 10
+  tags:
+    - public
+http:
+  method: GET
+  url: http://localhost:5000/api/projects/sample-project
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("project returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("project has title, slug and is published", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("project");
+          expect(body.project).to.have.property("slug", "sample-project");
+          expect(body.project).to.have.property("title");
+          expect(body.project.published).to.equal(true);
+        });

@@ -1,0 +1,41 @@
+info:
+  name: Admin Login
+  type: http
+  seq: 2
+  tags:
+    - auth
+    - smoke
+http:
+  method: POST
+  url: http://localhost:5000/api/auth/login
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      { "email": "admin@yourdomain.com", "password": "change_me" }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("login returns 200", () => {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("body contains authenticated user", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("user");
+          expect(body.user).to.have.property("email", "admin@yourdomain.com");
+          expect(body.user).to.have.property("role", "admin");
+        });
+        // capture session token from Set-Cookie header for protected requests
+        const headers = res.getHeaders();
+        const setCookie = headers["set-cookie"];
+        const cookies = Array.isArray(setCookie) ? setCookie : [setCookie].filter(Boolean);
+        const tokenCookie = cookies.find((c) => String(c).startsWith("token="));
+        if (tokenCookie) {
+          const token = String(tokenCookie).split(";")[0].split("=")[1];
+          if (token) bru.setVar("auth_token", token);
+        }

@@ -1,0 +1,36 @@
+info:
+  name: Create Project
+  type: http
+  seq: 11
+  tags:
+    - auth
+http:
+  method: POST
+  url: http://localhost:5000/api/projects
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{auth_token}}
+  body:
+    type: json
+    data: |-
+      { "title": "Bruno Test Project", "description": "Created by Bruno API test.", "tech_stack": ["React","Node.js"], "live_url": "https://example.com", "repo_url": "https://github.com/example/repo", "published": true, "order": 10 }
+settings:
+  encodeUrl: true
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test("create project returns 201", () => {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("project created and id stored", () => {
+          const body = res.getBody();
+          expect(body).to.have.property("project");
+          const p = body.project;
+          expect(p).to.have.property("id");
+          expect(p.title).to.equal("Bruno Test Project");
+          expect(p.published).to.equal(true);
+          bru.setVar("project_id", p.id);
+        });
