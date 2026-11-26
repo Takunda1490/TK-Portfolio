@@ -85,3 +85,46 @@ export const login = (email, password) =>
     body: JSON.stringify({ email, password }),
   }).then((r) => r.user);
 
+export const updateProfile = (payload) =>
+  request('/profile', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((r) => r.profile);
+
+export const fetchSettings = () => request('/settings').then((r) => r.settings);
+
+export const updateSettings = (settings) =>
+  request('/settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  }).then((r) => r.settings);
+
+/**
+ * Upload a file to ImageKit via the REST upload endpoint.
+ * Requires VITE_IMAGEKIT_PUBLIC_KEY and VITE_IMAGEKIT_PRIVATE_KEY to be exposed
+ * to the client (set them in client/.env as VITE_* variables). Falls back
+ * gracefully so the form can still accept an ImageKit URL directly.
+ */
+export const uploadToImageKit = async (file) => {
+  const publicKey = import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY;
+  const privateKey = import.meta.env.VITE_IMAGEKIT_PRIVATE_KEY;
+  if (!publicKey || !privateKey) {
+    throw new Error('ImageKit credentials not configured for client uploads');
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('fileName', file.name);
+  formData.append('useUniqueFileName', 'true');
+  const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${btoa(`${publicKey}:${privateKey}`)}`,
+    },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`ImageKit upload failed: ${res.status}`);
+  const data = await res.json();
+  return data.url;
+};
+
+
