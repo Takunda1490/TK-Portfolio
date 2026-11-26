@@ -2,6 +2,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -67,4 +68,20 @@ export const submitContact = (payload) =>
     method: 'POST',
     body: JSON.stringify(payload),
   }).then((r) => r.message);
+
+export const fetchMe = async () => {
+  try {
+    const r = await request('/auth/me');
+    return r.user;
+  } catch (err) {
+    if (err.status === 401) return null;
+    throw err;
+  }
+};
+
+export const login = (email, password) =>
+  request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }).then((r) => r.user);
 
