@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
 import { fetchMe } from '../api';
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
   const { showToast } = useToast();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +14,11 @@ export default function AdminDashboard() {
         const me = await fetchMe();
         if (!cancelled) setUser(me);
       } catch {
-        if (!cancelled) navigate('/login', { replace: true });
+        if (!cancelled) showToast({
+          type: 'error',
+          message: 'Session expired. Please log in again.',
+          persistent: true,
+        });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -24,33 +26,13 @@ export default function AdminDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      showToast({
-        type: 'success',
-        message: 'Logged out.',
-      });
-      navigate('/login', { replace: true });
-    } catch (err) {
-      showToast({
-        type: 'error',
-        message: err.message || 'Logout failed.',
-        persistent: true,
-      });
-    }
-  };
+  }, [showToast]);
 
   if (loading) {
     return (
-      <section className="page">
+      <section className="page admin-section">
         <div className="container">
-          <h2>Admin Dashboard</h2>
+          <h2>Dashboard</h2>
           <p>Loading…</p>
         </div>
       </section>
@@ -62,14 +44,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <section className="page admin-dashboard">
+    <section className="page admin-section">
       <div className="container">
-        <div className="dashboard-header">
-          <h2>Admin Dashboard</h2>
-          <button type="button" className="btn-logout" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
         <div className="dashboard-grid">
           <div className="dashboard-card">
             <h3>Welcome, {user.email}</h3>
