@@ -61,6 +61,27 @@ export const fetchSocialLinks = () =>
  */
 export const fetchProjects = () => request('/projects').then((r) => r.projects);
 
+export const createProject = (payload) =>
+  request('/projects', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((r) => r.project);
+
+export const updateProject = (id, payload) =>
+  request(`/projects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((r) => r.project);
+
+export const deleteProject = (id) =>
+  request(`/projects/${id}`, { method: 'DELETE' }).then(() => id);
+
+export const reorderProjects = (ids) =>
+  request('/projects/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
+  });
+
 export const fetchServices = () => request('/services').then((r) => r.services);
 
 export const submitContact = (payload) =>
