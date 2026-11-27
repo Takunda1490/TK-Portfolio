@@ -4,8 +4,8 @@ services:
     runtime: node
     plan: free
     buildCommand: |
-      cd server && npm install
-      cd ../client && npm install && npm run build
+      cd server && npm ci
+      cd ../client && npm ci && npm run build
     startCommand: cd server && npm run migrate && npm run start
     healthCheckPath: /api/health
     envVars:
