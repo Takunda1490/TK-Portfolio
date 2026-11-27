@@ -53,8 +53,6 @@ export function imageKitUrl(url, transforms) {
 
 export const fetchProfile = () => request('/profile').then((r) => r.profile);
 export const fetchSkills = () => request('/skills').then((r) => r.skills);
-export const fetchSocialLinks = () =>
-  request('/social-links').then((r) => r.social_links);
 /**
  * Fetch projects. The API returns only published projects for unauthenticated
  * callers, so this is safe to use on the public projects page.
@@ -83,6 +81,74 @@ export const reorderProjects = (ids) =>
   });
 
 export const fetchServices = () => request('/services').then((r) => r.services);
+
+export const createService = (payload) =>
+  request('/services', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((r) => r.service);
+
+export const updateService = (id, payload) =>
+  request(`/services/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((r) => r.service);
+
+export const deleteService = (id) =>
+  request(`/services/${id}`, { method: 'DELETE' }).then(() => id);
+
+export const reorderServices = (ids) =>
+  request('/services/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
+  });
+
+export const createSkill = (payload) =>
+  request('/skills', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((r) => r.skill);
+
+export const updateSkill = (id, payload) =>
+  request(`/skills/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((r) => r.skill);
+
+export const deleteSkill = (id) =>
+  request(`/skills/${id}`, { method: 'DELETE' }).then(() => id);
+
+export const fetchSocialLinks = () =>
+  request('/social-links').then((r) => r.social_links);
+
+export const createSocialLink = (payload) =>
+  request('/social-links', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((r) => r.social_link);
+
+export const updateSocialLink = (id, payload) =>
+  request(`/social-links/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((r) => r.social_link);
+
+export const deleteSocialLink = (id) =>
+  request(`/social-links/${id}`, { method: 'DELETE' }).then(() => id);
+
+export const fetchMessages = (params) => {
+  const qs = new URLSearchParams(params || {}).toString();
+  return request(`/messages${qs ? '?' + qs : ''}`).then((r) => r);
+};
+
+export const markMessageRead = (id) =>
+  request(`/messages/${id}/read`, { method: 'PATCH' }).then((r) => r.message);
+
+export const markMessageUnread = (id) =>
+  request(`/messages/${id}/unread`, { method: 'PATCH' }).then((r) => r.message);
+
+export const deleteMessage = (id) =>
+  request(`/messages/${id}`, { method: 'DELETE' }).then(() => id);
 
 export const submitContact = (payload) =>
   request('/contact', {

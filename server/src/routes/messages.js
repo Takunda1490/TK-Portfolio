@@ -98,6 +98,19 @@ router.patch('/messages/:id/read', requireAuth, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// PATCH /api/messages/:id/unread  (auth)
+router.patch('/messages/:id/unread', requireAuth, async (req, res, next) => {
+  try {
+    const [r] = await pool.query(
+      'UPDATE messages SET read_at = NULL WHERE id = ?',
+      [req.params.id]
+    );
+    if (!r.affectedRows) return res.status(404).json({ error: 'Not found' });
+    const [rows] = await pool.query('SELECT * FROM messages WHERE id = ?', [req.params.id]);
+    res.json({ message: rows[0] });
+  } catch (e) { next(e); }
+});
+
 // DELETE /api/messages/:id  (auth)
 router.delete('/messages/:id', requireAuth, async (req, res, next) => {
   try {

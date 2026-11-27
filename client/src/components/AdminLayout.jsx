@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from './ToastContext';
+import { fetchMessages } from '../api';
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard' },
@@ -29,6 +30,10 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    fetchMessages().then((r) => setUnread((r.messages||[]).filter(m=>!m.read_at).length)).catch(()=>{});
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -84,7 +89,7 @@ export default function AdminLayout() {
                   end={item.to === '/admin/dashboard'}
                   onClick={close}
                 >
-                  {item.label}
+                  {item.label}{item.to==='/admin/messages' && unread>0 ? ` (${unread})` : ''}
                 </NavLink>
               </li>
             ))}

@@ -1,93 +1,147 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { pool } from './connection.js';
 
-const statements = [
-  `CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin') NOT NULL DEFAULT 'admin',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`,
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const migrationsDir = path.join(__dirname, 'migrations');
 
-  `CREATE TABLE IF NOT EXISTS profile (
-    id INT PRIMARY KEY DEFAULT 1,
-    name VARCHAR(255) NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    bio TEXT,
-    avatar_url VARCHAR(500),
-    resume_url VARCHAR(500),
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )`,
+async function getAppliedMigrations(conn) {
+  const [rows] = await conn.query('SELECT name FROM migrations ORDER BY id');
+  return rows.map(r => r.name);
+}
 
-  `CREATE TABLE IF NOT EXISTS projects (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL UNIQUE,
-    description TEXT,
-    tech_stack JSON,
-    live_url VARCHAR(500),
-    repo_url VARCHAR(500),
-    cover_image VARCHAR(500),
-    \`order\` INT NOT NULL DEFAULT 0,
-    published BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS services (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    icon VARCHAR(100),
-    \`order\` INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS skills (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    level INT NOT NULL DEFAULT 0,
-    category VARCHAR(100) NOT NULL,
-    \`order\` INT NOT NULL DEFAULT 0
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS social_links (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    platform VARCHAR(50) NOT NULL,
-    url VARCHAR(500) NOT NULL,
-    icon VARCHAR(100) NOT NULL,
-    \`order\` INT NOT NULL DEFAULT 0
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS messages (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    subject VARCHAR(255),
-    body TEXT NOT NULL,
-    read_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`,
-
-  `CREATE TABLE IF NOT EXISTS site_settings (
-    \`key\` VARCHAR(100) PRIMARY KEY,
-    \`value\` TEXT
-  )`,
-];
-
-async function migrate() {
+async function runMigrations() {
   const conn = await pool.getConnection();
   try {
-    for (const sql of statements) {
-      await conn.query(sql);
-      console.log('OK:', sql.split('\n')[0].trim().slice(0, 60));
+    // Ensure migrations table exists
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    const applied = await getAppliedMigrations(conn);
+    const files = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.js'))
+      .sort();
+
+    for (const file of files) {
+      if (applied.includes(file)) {
+        console.log(`SKIP: ${file} (already applied)`);
+        continue;
+      }
+
+      const migration = await import(path.join(migrationsDir, file));
+      if (typeof migration.up !== 'function') {
+        console.error(`ERROR: ${file} does not export an 'up' function`);
+        process.exit(1);
+      }
+
+      await conn.beginTransaction();
+      try {
+        await migration.up();
+        await conn.query('INSERT INTO migrations (name) VALUES (?)', [file]);
+        await conn.commit();
+        console.log(`OK: ${file}`);
+      } catch (e) {
+        await conn.rollback();
+        throw e;
+      }
     }
-    console.log('Migration complete.');
+
+    console.log('All migrations applied.');
   } finally {
     conn.release();
     await pool.end();
   }
 }
 
-migrate().catch((e) => { console.error(e); process.exit(1); });
+async function rollbackLast() {
+  const conn = await pool.getConnection();
+  try {
+    const applied = await getAppliedMigrations(conn);
+    if (applied.length === 0) {
+      console.log('No migrations to rollback');
+      return;
+    }
+
+    const last = applied[applied.length - 1];
+    const migration = await import(path.join(migrationsDir, last));
+
+    if (typeof migration.down !== 'function') {
+      console.error(`ERROR: ${last} does not export a 'down' function`);
+      process.exit(1);
+    }
+
+    await conn.beginTransaction();
+    try {
+      await migration.down();
+      await conn.query('DELETE FROM migrations WHERE name = ?', [last]);
+      await conn.commit();
+      console.log(`Rolled back: ${last}`);
+    } catch (e) {
+      await conn.rollback();
+      throw e;
+    }
+  } finally {
+    conn.release();
+    await pool.end();
+  }
+}
+
+async function status() {
+  const conn = await pool.getConnection();
+  try {
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    const applied = await getAppliedMigrations(conn);
+    const files = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.js'))
+      .sort();
+
+    console.log('\nMigration Status:');
+    console.log('-------------------');
+    for (const file of files) {
+      const isApplied = applied.includes(file);
+      console.log(`${isApplied ? '[x]' : '[ ]'} ${file}`);
+    }
+    console.log('-------------------');
+    console.log(`Applied: ${applied.length}/${files.length}\n`);
+  } finally {
+    conn.release();
+    await pool.end();
+  }
+}
+
+const command = process.argv[2];
+
+switch (command) {
+  case 'up':
+  case 'migrate':
+    runMigrations().catch(e => { console.error(e); process.exit(1); });
+    break;
+  case 'down':
+  case 'rollback':
+    rollbackLast().catch(e => { console.error(e); process.exit(1); });
+    break;
+  case 'status':
+    status().catch(e => { console.error(e); process.exit(1); });
+    break;
+  default:
+    console.log('Usage: node migrate.js [up|down|status]');
+    console.log('  up (or migrate)   - Run pending migrations');
+    console.log('  down (or rollback) - Rollback last migration');
+    console.log('  status            - Show migration status');
+    process.exit(1);
+}
