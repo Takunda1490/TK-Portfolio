@@ -15,10 +15,7 @@ services:
       - key: PORT
         value: 10000
       - key: CLIENT_URL
-        fromService:
-          type: web
-          name: tk-portfolio-api
-          property: host
+        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_PORT
