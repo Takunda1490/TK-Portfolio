@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: tk-portfolio-api
+    runtime: node
+    plan: free
+    buildCommand: |
+      cd server && npm install
+      cd ../client && npm install && npm run build
+    startCommand: cd server && npm run migrate && npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: tk-portfolio-api
+          property: host
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: IMAGEKIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGEKIT_PRIVATE_KEY
+        sync: false
+      - key: IMAGEKIT_URL_ENDPOINT
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: ADMIN_NOTIFY_EMAIL
+        sync: false
+
+# Optional: Add a free PostgreSQL if you want to migrate from MySQL
+# databases:
+#   - name: portfolio-db
+#     plan: free
+#     databaseName: portfolio
+#     user: portfolio_user
