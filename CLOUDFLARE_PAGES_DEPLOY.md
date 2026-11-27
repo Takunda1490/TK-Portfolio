@@ -27,7 +27,7 @@ Get your API URL: `https://tk-portfolio-api.onrender.com`
 | **Project name** | `tk-portfolio-client` |
 | **Production branch** | `main` |
 | **Root directory** | `/` (repo root) |
-| **Build command** | `cd client && npm ci && npm run build` |
+| **Build command** | `cd client && pnpm install && pnpm run build` |
 | **Build output directory** | `client/dist` |
 | **Node version** | `20` |
 
@@ -35,7 +35,7 @@ Get your API URL: `https://tk-portfolio-api.onrender.com`
 In Pages project → **Settings** → **Environment variables**:
 
 ```bash
-VITE_API_URL=https://tk-portfolio-api.onrender.com/api
+VITE_API_BASE=https://tk-portfolio-api.onrender.com/api
 ```
 
 ### 4. Deploy
@@ -47,20 +47,27 @@ VITE_API_URL=https://tk-portfolio-api.onrender.com/api
 - Add `portfolio.yourdomain.com` (or root)
 - Cloudflare handles SSL automatically
 
-## SPA Routing
-The `wrangler.toml` includes redirects for client-side routing:
-```toml
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+## SPA Routing & Headers
+Configured via `client/public/_redirects` and `client/public/_headers` (copied to `dist` on build):
+
+**`client/public/_redirects`** - SPA fallback:
+```
+/*    /index.html   200
+```
+
+**`client/public/_headers`** - Security headers:
+```
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
 ```
 
 ## API URL in Client
-Update `client/src/api.js` to use the env var:
+`client/src/api.js` uses `VITE_API_BASE` env var (falls back to `/api` for local):
 
 ```javascript
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || '/api';
 ```
 
 ## Benefits
