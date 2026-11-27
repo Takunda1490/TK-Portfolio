@@ -7,7 +7,7 @@ services:
       npm install -g pnpm
       cd server && pnpm install
       cd ../client && pnpm install && pnpm run build
-    startCommand: cd server && npm run migrate && npm run start
+    startCommand: cd server && npm run migrate && npm run seed && npm run start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
